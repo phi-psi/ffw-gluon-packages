@@ -1,17 +1,17 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=gluon-autoupdater
-PKG_VERSION:=2
+PKG_VERSION:=4
 PKG_RELEASE:=$(GLUON_BRANCH)
 
 PKG_BUILD_DIR := $(BUILD_DIR)/$(PKG_NAME)
 
-include $(INCLUDE_DIR)/package.mk
+include $(GLUONDIR)/include/package.mk
 
 define Package/gluon-autoupdater
   SECTION:=gluon
   CATEGORY:=Gluon
-  DEPENDS:=+gluon-core +gluon-cron +opkg +ecdsautils +!BUSYBOX_CONFIG_SHA512SUM:coreutils-sha512sum
+  DEPENDS:=+gluon-core +gluon-cron +autoupdater
   TITLE:=Automatically update firmware
 endef
 
@@ -32,6 +32,11 @@ define Package/gluon-autoupdater/install
 		$(INSTALL_DIR) $(1)/lib/gluon/autoupdater; \
 		echo '$(GLUON_BRANCH)' > $(1)/lib/gluon/autoupdater/default_branch; \
 	fi
+endef
+
+define Package/gluon-autoupdater/postinst
+#!/bin/sh
+$(call GluonCheckSite,check_site.lua)
 endef
 
 $(eval $(call BuildPackage,gluon-autoupdater))

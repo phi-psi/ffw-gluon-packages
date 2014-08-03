@@ -2,26 +2,34 @@
 
 local site = require 'gluon.site_config'
 local sysconfig = require 'gluon.sysconfig'
+local users = require 'gluon.users'
+
 local nixio = require 'nixio'
 local uci = require 'luci.model.uci'
 
 local c = uci.cursor()
 
 
-os.execute('. /lib/gluon/functions/users.sh && add_user gluon-fastd 800')
+-- The previously used user is removed, we need root privileges to use the packet_mark option
+users.remove_user('gluon-fastd')
+
+-- Group for iptables rule
+users.add_group('gluon-fastd', 800)
 
 
 c:section('fastd', 'fastd', 'mesh_vpn',
 	  {
-		  user = 'gluon-fastd',
+		  group = 'gluon-fastd',
 		  syslog_level = 'verbose',
 		  interface = 'mesh-vpn',
 		  mode = 'tap',
 		  mtu = site.fastd_mesh_vpn.mtu,
 		  secure_handshakes = '1',
 		  method = site.fastd_mesh_vpn.methods,
+		  packet_mark = 1,
 	  }
 )
+c:delete('fastd', 'mesh_vpn', 'user')
 
 c:delete('fastd', 'mesh_vpn_backbone')
 c:section('fastd', 'peer_group', 'mesh_vpn_backbone',
@@ -66,3 +74,15 @@ c:section('network', 'interface', 'mesh_vpn',
 
 c:save('network')
 c:commit('network')
+
+
+c:section('firewall', 'include', 'mesh_vpn_dns',
+	  {
+	    type = 'restore',
+	    path = '/lib/gluon/mesh-vpn-fastd/iptables.rules',
+	    family = 'ipv4',
+	  }
+)
+
+c:save('firewall')
+c:commit('firewall')

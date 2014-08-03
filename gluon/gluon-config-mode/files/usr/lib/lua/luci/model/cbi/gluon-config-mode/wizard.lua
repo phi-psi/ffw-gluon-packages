@@ -25,7 +25,8 @@ o.rmempty = false
 s = f:section(SimpleSection, nil, [[Falls du deinen Knoten über das Internet
 mit Freifunk verbinden möchtest, kannst du hier das Mesh-VPN aktivieren.
 Solltest du dich dafür entscheiden, hast du die Möglichkeit die dafür
-genutzte Bandbreite zu beschränken.]])
+genutzte Bandbreite zu beschränken. Lässt du das Mesh-VPN deaktiviert,
+verbindet sich dein Knoten nur per WLAN mit anderen Knoten in der Nähe.]])
 
 o = s:option(Flag, "_meshvpn", "Mesh-VPN aktivieren")
 o.default = uci:get_bool("fastd", meshvpn_name, "enabled") and o.enabled or o.disabled
@@ -36,13 +37,13 @@ o:depends("_meshvpn", "1")
 o.default = uci:get_bool("gluon-simple-tc", meshvpn_name, "enabled") and o.enabled or o.disabled
 o.rmempty = false
 
-o = s:option(Value, "_limit_ingress", "Downstream")
+o = s:option(Value, "_limit_ingress", "Downstream (kbit/s)")
 o:depends("_limit_enabled", "1")
 o.value = uci:get("gluon-simple-tc", meshvpn_name, "limit_ingress")
 o.rmempty = false
 o.datatype = "integer"
 
-o = s:option(Value, "_limit_egress", "Upstream")
+o = s:option(Value, "_limit_egress", "Upstream (kbit/s)")
 o:depends("_limit_enabled", "1")
 o.value = uci:get("gluon-simple-tc", meshvpn_name, "limit_egress")
 o.rmempty = false

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-. /lib/gluon/functions/model.sh
+model="$(lua -e 'print(require("platform_info").get_model())')"
 
 escape_html() {
   sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g; s/"/\&quot;/g; s/'"'"'/\&#39;/g'
@@ -27,7 +27,7 @@ echo "<h1>$(cat /proc/sys/kernel/hostname)</h1>"
 
 echo "<pre>"
 
-echo "Model: $(get_model | escape_html)"
+echo "Model: $model" | escape_html
 echo "Firmware release: $(cat /lib/gluon/release | escape_html)"
 echo
 
@@ -47,15 +47,15 @@ echo "</pre>"
 echo "<h2>Neighbours</h2>"
 
 
-iw dev | grep IBSS -B 4 | grep Interface | cut -d' ' -f2 | while read if
+iw dev | grep IBSS -B 5 | grep Interface | cut -d' ' -f2 | while read if
 do
   echo "<h3>$if</h3>"
   echo "<pre>"
-  
+
   iw dev $if link | escape_html
 
-  echo 
-  
+  echo
+
   iw dev $if station dump | escape_html | linknodes
 
   echo "</pre>"

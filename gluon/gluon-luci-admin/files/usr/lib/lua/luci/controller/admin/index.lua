@@ -17,10 +17,9 @@ module("luci.controller.admin.index", package.seeall)
 
 function index()
 	local uci_state = luci.model.uci.cursor_state()
-	local configmode = uci_state:get_first("gluon-config-mode", "wizard", "running", "0") == "1"
 
-	-- Disable gluon-luci-admin when configmode is not enabled
-	if not configmode then
+	-- Disable gluon-luci-admin when setup mode is not enabled
+	if uci_state:get_first('gluon-setup-mode', 'setup_mode', 'running', '0') ~= '1' then
 		return
 	end
 
@@ -29,32 +28,12 @@ function index()
 		root.target = alias("admin")
 		root.index = true
 	end
-	
-	local page	 = entry({"admin"}, alias("admin", "index"), "Expertmode", 10)
+
+	local page = entry({"admin"}, alias("admin", "index"), "Expert Mode", 10)
 	page.sysauth = "root"
-	if configmode then
-		-- force root to be logged in when running in configmode
-		page.sysauth_authenticator = function() return "root" end
-	else
-		page.sysauth_authenticator = "htmlauth"
-	end
+	page.sysauth_authenticator = function() return "root" end
 	page.index = true
-	
-	entry({"admin", "index"}, cbi("admin/remote"), "Remotezugriff", 1).ignoreindex = true
 
-	if not configmode then
-		entry({"admin", "logout"}, call("action_logout"), "Logout")
-	end
-end
-
-function action_logout()
-	local dsp = require "luci.dispatcher"
-	local sauth = require "luci.sauth"
-	if dsp.context.authsession then
-		sauth.kill(dsp.context.authsession)
-		dsp.context.urltoken.stok = nil
-	end
-
-	luci.http.header("Set-Cookie", "sysauth=; path=" .. dsp.build_url())
-	luci.http.redirect(luci.dispatcher.build_url())
+	entry({"admin", "index"}, cbi("admin/info"), _("Info"), 1).ignoreindex = true
+	entry({"admin", "remote"}, cbi("admin/remote"), _("Remotezugriff"), 10)
 end

@@ -4,17 +4,17 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=gluon-config-mode
-PKG_VERSION:=2
+PKG_VERSION:=4
 
 PKG_BUILD_DIR := $(BUILD_DIR)/$(PKG_NAME)
 
-include $(INCLUDE_DIR)/package.mk
+include $(GLUONDIR)/include/package.mk
 
 define Package/gluon-config-mode
   SECTION:=gluon
   CATEGORY:=Gluon
-  TITLE:=Luci based config mode for user friendly setup of new meshnodes
-  DEPENDS:=+gluon-luci-core +gluon-lock-password +gluon-node-info +gluon-simple-tc +uhttpd +dnsmasq +ip
+  TITLE:=Luci based config mode for user friendly setup of new mesh nodes
+  DEPENDS:=+gluon-luci-core +gluon-setup-mode +gluon-lock-password +gluon-node-info +gluon-simple-tc
 endef
 
 define Package/gluon-config-mode/description
@@ -33,6 +33,11 @@ endef
 
 define Package/gluon-config-mode/install
 	$(CP) ./files/* $(1)/
+endef
+
+define Package/gluon-config-mode/postinst
+#!/bin/sh
+$(call GluonCheckSite,check_site.lua)
 endef
 
 $(eval $(call BuildPackage,gluon-config-mode))
